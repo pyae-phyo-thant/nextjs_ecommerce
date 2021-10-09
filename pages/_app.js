@@ -9,10 +9,12 @@ import { AnimatePresence } from "framer-motion";
 import { StoreProvider } from "../utils/Store";
 import Header from "../components/topBar/Header";
 import TopBar from "../components/topBar/TopBar";
+import Development from "../components/banner/Development";
 
 function MyApp({ Component, pageProps }) {
   return (
     <StoreProvider>
+      <Development />
       <TopBar />
       <Header />
       <ToastContainer />
