@@ -9,9 +9,11 @@ const shipping = () => {
   const { state } = useContext(Store);
   const { userInfo } = state;
 
-  if (!userInfo) {
-    router.push("/login?redirect=/shipping");
-  }
+  useEffect(() => {
+    if (!userInfo) {
+      router.push("/login?redirect=/shipping");
+    }
+  }, []);
 
   return <div>shipping</div>;
 };
