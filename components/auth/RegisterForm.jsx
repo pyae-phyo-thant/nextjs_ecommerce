@@ -11,10 +11,7 @@ const RegisterForm = ({
   submitHandler,
   handleSubmit,
   loading,
-  name,
-  setName,
   confirmedPassword,
-  setConfirmedPassword,
   showPassword,
   setShowPassword,
   Controller,
@@ -69,7 +66,6 @@ const RegisterForm = ({
                 type="email"
                 label="Email address"
                 placeholder="enter your email"
-                autoFocus
                 variant="outlined"
                 style={{ border: "none!important" }}
                 error={Boolean(errors.email)}

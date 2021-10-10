@@ -7,6 +7,8 @@ import slide_3 from "../../assets/images/slide-3.jpeg";
 
 const LandSlide = () => {
   var settings = {
+    autoplay: true,
+    autoplaySpeed: 3000,
     dots: true,
     infinite: true,
     speed: 500,

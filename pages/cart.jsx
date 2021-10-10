@@ -82,7 +82,7 @@ const cartDetails = () => {
                                 </p>
                               </Link>
                             </h3>
-                            <p className="ml-4">{cartItem.price}</p>
+                            <p className="ml-4">$ {cartItem.price}</p>
                           </div>
                           <p className="mt-1 text-left text-sm text-gray-500">
                             {cartItem.color}
