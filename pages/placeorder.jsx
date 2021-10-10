@@ -40,6 +40,9 @@ const placeorder = () => {
     if (!paymentMethod) {
       router.push("/payment");
     }
+    if (cartItem.length === 0) {
+      router.push("/cart");
+    }
   }, []);
 
   const placeOrderHandler = async () => {
