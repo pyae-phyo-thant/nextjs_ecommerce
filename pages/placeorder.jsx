@@ -1,23 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
-import {
-  Grid,
-  Typography,
-  CircularProgress,
-  Button,
-  Card,
-  List,
-  ListItem,
-} from "@mui/material";
+import { Grid, Typography, Card, List, ListItem } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 
 import Layout from "../components/layout/Layout";
 import { Store } from "../utils/Store";
 import CheckOutStep from "../components/checkOut/CheckOutStep";
+import { getError } from "../utils/error";
 
 const placeorder = () => {
   const { state, dispatch } = useContext(Store);
@@ -40,7 +33,7 @@ const placeorder = () => {
     if (!paymentMethod) {
       router.push("/payment");
     }
-    if (cartItem.length === 0) {
+    if (cartItems.length === 0) {
       router.push("/cart");
     }
   }, []);
@@ -72,7 +65,7 @@ const placeorder = () => {
       setLoading(false);
       router.push(`/order/${data._id}`);
     } catch (error) {
-      toast.error("something went wrong!");
+      toast.error(`${getError(error)}`);
       setLoading(false);
     }
   };
@@ -204,20 +197,17 @@ const placeorder = () => {
                   </Grid>
                 </ListItem>
                 <ListItem>
-                  <Button
-                    onClick={placeOrderHandler}
-                    variant="contained"
-                    color="primary"
+                  <LoadingButton
                     fullWidth
+                    size="large"
+                    type="submit"
+                    variant="contained"
+                    loading={loading}
+                    onClick={placeOrderHandler}
                   >
                     Place Order
-                  </Button>
+                  </LoadingButton>
                 </ListItem>
-                {loading && (
-                  <ListItem>
-                    <CircularProgress />
-                  </ListItem>
-                )}
               </List>
             </Card>
           </Grid>
