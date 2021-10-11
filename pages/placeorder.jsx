@@ -71,7 +71,7 @@ const placeorder = () => {
   };
 
   return (
-    <Layout title="Shopping Cart">
+    <Layout title="Order">
       <div className="bg-white px-4 mt-10  mx-auto text-center">
         <p className="font-extrabold text-3xl">Place Order</p>
         <CheckOutStep activeStep={2} />

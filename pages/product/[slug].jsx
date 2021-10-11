@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
@@ -7,11 +7,19 @@ import { motion } from "framer-motion";
 
 import Rating from "@mui/material/Rating";
 import { RadioGroup } from "@headlessui/react";
+import {
+  List,
+  ListItem,
+  TextField,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 
 import db from "../../utils/db";
+import { getError } from "../../utils/error";
 import { Store } from "../../utils/Store";
 import Product from "../../models/Products";
-
 import Layout from "../../components/layout/Layout";
 
 function classNames(...classes) {
@@ -48,12 +56,55 @@ const ProductDetail = (props) => {
   const { product } = props;
   const { dispatch, state } = useContext(Store);
 
+  const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { userInfo } = state;
+
   const [selectedColor, setSelectedColor] = useState(product.color);
   const [selectedSize, setSelectedSize] = useState(product.size);
-  const reviews = { href: "#", average: 4, totalCount: 117 };
+  // const reviews = { href: "#", average: 4, totalCount: 117 };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post(
+        `/api/products/${product._id}/reviews`,
+        {
+          rating,
+          comment,
+        },
+        {
+          headers: { authorization: `Bearer ${userInfo.token}` },
+        }
+      );
+      setLoading(false);
+      toast.success("Review submitted successfully");
+      fetchReviews();
+    } catch (err) {
+      setLoading(false);
+      toast.error(getError(err));
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const { data } = await axios.get(`/api/products/${product._id}/reviews`);
+      setReviews(data);
+      console.log(data, "review");
+    } catch (err) {
+      toast.error(getError(err));
+    }
+  };
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
   if (!product) {
-    return <div>Product not found</div>;
+    return <div>Product Not Found</div>;
   }
 
   const addToCartHandler = async (e) => {
@@ -69,6 +120,7 @@ const ProductDetail = (props) => {
 
     dispatch({ type: "CART_ADD_ITEM", payload: { ...product, quantity } });
   };
+
   return (
     <Layout title={product.name}>
       <motion.div
@@ -117,26 +169,116 @@ const ProductDetail = (props) => {
             </ol>
           </nav>
 
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            <motion.div
-              className="pt-6"
-              className="img"
-              animate={{ opacity: 1 }}
-              initial={{ opacity: 0 }}
-            >
-              <motion.img
-                key={product.image}
-                animate={{ x: 0, opacity: 1 }}
-                initial={{ x: 200, opacity: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: 0.2 }}
-                src={product.image}
-                width={300}
-                height={300}
-              />
-            </motion.div>
-            <motion.div className="col-span-2" variants={stagger}>
-              <div className="max-w-2xl mx-auto  lg:max-w-7xl  lg:grid lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            <div>
+              <motion.div
+                className="pt-6"
+                className="img"
+                animate={{ opacity: 1 }}
+                initial={{ opacity: 0 }}
+              >
+                <Image
+                  key={product.image}
+                  animate={{ x: 0, opacity: 1 }}
+                  initial={{ x: 200, opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 0.2 }}
+                  src={product.image}
+                  width={500}
+                  height={500}
+                  className="rounded-lg h-4/6 w-full bg-gray-400"
+                />
+              </motion.div>
+              <div className="mt-6">
+                <h4 className="text-2xl text-purple-700">Customer Reviews</h4>
+
+                {reviews.length === 0 && <p>No review</p>}
+                {reviews.map((review) => (
+                  <div key={review._id}>
+                    <div className="flex mt-6">
+                      <img
+                        className="inline-block mr-3 h-10 w-10 rounded-full ring-2 ring-white"
+                        src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                        alt=""
+                      />
+                      <div>
+                        <div className="">
+                          <p className="text-sm font-semibold">{review.name}</p>
+                          <span className="text-sm text-gray-400">
+                            {review.createdAt.substring(0, 10)}
+                          </span>
+                        </div>
+                        <div>
+                          <Rating
+                            value={review.rating}
+                            readOnly
+                            className="mb-4 mt-4"
+                          />
+
+                          <p className="text-sm text-gray-600">
+                            {review.comment}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <ListItem>
+                  {userInfo ? (
+                    <form onSubmit={submitHandler} className="">
+                      <List>
+                        <ListItem>
+                          <Typography variant="h5" className="w-full">
+                            Leave your review
+                          </Typography>
+                        </ListItem>
+                        <ListItem>
+                          <TextField
+                            multiline
+                            variant="outlined"
+                            fullWidth
+                            name="review"
+                            label="Enter comment"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <Rating
+                            name="simple-controlled"
+                            value={rating}
+                            precision={0.5}
+                            onChange={(e) => setRating(e.target.value)}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                          >
+                            Submit
+                          </Button>
+
+                          {loading && <CircularProgress></CircularProgress>}
+                        </ListItem>
+                      </List>
+                    </form>
+                  ) : (
+                    <Typography variant="h2">
+                      Please{" "}
+                      <Link href={`/login?redirect=/product/${product.slug}`}>
+                        login
+                      </Link>{" "}
+                      to write a review
+                    </Typography>
+                  )}
+                </ListItem>
+              </div>
+            </div>
+            <motion.div className="" variants={stagger}>
+              <div className="pl-10">
                 <div className="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
                   <motion.h1
                     variants={fadeInUp}
@@ -179,6 +321,7 @@ const ProductDetail = (props) => {
                           name="half-rating"
                           defaultValue={product.rating}
                           precision={0.5}
+                          disabled={!userInfo ? true : false}
                         />
                       </motion.div>
                       <motion.p variants={fadeInUp} className="sr-only">
@@ -292,6 +435,7 @@ const ProductDetail = (props) => {
                       Add to Cart
                     </motion.button>
                   </form>
+                  <hr />
                 </div>
 
                 <div className="py-10 lg:pt-6 lg:pb-16 lg:col-start-1 lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
@@ -367,7 +511,7 @@ export async function getServerSideProps(context) {
 
   await db.connect();
 
-  const product = await Product.findOne({ slug }).lean();
+  const product = await Product.findOne({ slug }, "-reviews").lean();
 
   await db.disconnect();
 
