@@ -321,7 +321,7 @@ const ProductDetail = (props) => {
                           name="half-rating"
                           defaultValue={product.rating}
                           precision={0.5}
-                          disabled={!userInfo ? true : false}
+                          readOnly
                         />
                       </motion.div>
                       <motion.p variants={fadeInUp} className="sr-only">
